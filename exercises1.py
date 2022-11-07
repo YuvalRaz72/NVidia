@@ -1,6 +1,6 @@
 import psutil
 from multiprocessing import Pool, TimeoutError
-import deepdish.io as dd
+import os
 from timeit import default_timer as timer
 import threading
 import asyncio
@@ -14,25 +14,40 @@ def Check_Free_Space():
             print (p.mountpoint, psutil.disk_usage(p.mountpoint).free / (1024.0))
 
 
-async def savefile(a,size):
+async def CreateFile(a,size):
     filesize = int(size) * 1024 * 1024
-    with open(str(a), 'w') as f:
-        f.seek(filesize) # One GB
-        f.write('0')
-   # dd.save(str(a),{'b':1,'t':2,'c':3,'g':4,'e':5,'d':6})
+    cmd = ("dd if=/dev/zero of="+ str(a) +".txt bs=1 count=0 seek="+str(filesize))
+    os.system(cmd)
+
+    # with open(str(a), 'w') as f:
+    #     f.seek(filesize) # One GB
+    #     f.write('0')
+   
         
-        
+async def FillFile(a,size):
+    filesize = int(size) * 1024 * 1024
+ 
+    cmd = ("dd if=/dev/zero of="+ str(a) +".txt bs=1,048,576 count=" + str(size) +" conv=notrunc")
+    os.system(cmd)
 
     
-def between_callback(a, size):
+
+    
+def CreateFile_callback(a, size):
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(savefile(a,size))
+    loop.run_until_complete(CreateFile(a,size))
     loop.close()
 
+def FillFile_callback(a, size):
 
-def run_many_calcs():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(FillFile(a,size))
+    loop.close()
+
+def run():
     num = input("Enter the number files to create:")
     size = input("Enter file size (in mb):")
     num_processes= int(num)
@@ -41,16 +56,20 @@ def run_many_calcs():
    
     start = timer()
     for a in range(1,num_processes+1):       
-        _thread = threading.Thread(target=between_callback, args=(a, size))
+        _thread = threading.Thread(target=CreateFile_callback, args=(a, size))
         _thread.start()
-      
+    
+    for a in range(1,num_processes+1):       
+        _thread = threading.Thread(target=FillFile_callback, args=(a, size))
+        _thread.start()
+
     end = timer()
     print(end - start)  
 
 
 if __name__ == '__main__':
     Check_Free_Space()
-    run_many_calcs()
+    run()
     
 
 
