@@ -1,3 +1,8 @@
+"""
+Run user-selected command on many servers (user-provided as param) with ssh in parallel, collect output from all nodes. 
+The script should print collected output from all nodes on stdout, w/o using temp files.
+"""
+
 import paramiko
 import threading
 import asyncio
