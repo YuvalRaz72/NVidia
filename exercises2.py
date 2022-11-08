@@ -2,6 +2,7 @@ import paramiko
 import threading
 import asyncio
 
+cmd = "echo 'hello world' "
 
 async def sshClient(host, port, user, password, command):
    
@@ -9,7 +10,7 @@ async def sshClient(host, port, user, password, command):
     try:
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #Set policy to use when connecting to servers without a known host key
         ssh.connect(hostname=host, username=user, password=password, port=port)
-        stdin, stdout, stderr = ssh.exec_command('sh ver')
+        stdin, stdout, stderr = ssh.exec_command(cmd)
         output = stdout.readlines()
         print(output)
     except:
@@ -46,7 +47,7 @@ except:
     print("File Error")
 
 
-cmd = "echo 'hello world' > testing.txt"
+
 
 for server in serverList:
     host = server[0]
